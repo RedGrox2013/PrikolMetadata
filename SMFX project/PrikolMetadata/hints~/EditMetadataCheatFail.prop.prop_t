@@ -1,0 +1,4 @@
+key parent HintTemplates!EP1-TemplateError
+texts hintText
+	(PrikolMetadataHints!0x1) "placeholder"
+end
