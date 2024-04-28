@@ -19,11 +19,23 @@ void EditMetadataCheat::ParseLine(const ArgScript::Line& line)
 	// Put your cheat code here.
 
 	_name = u"";
+	_author = u"";
+	_description = u"";
 
 	bool hasArgs = false;
 	auto nameArgs = line.GetOption("name", 1);
 	if (nameArgs) {
 		_name.assign_convert(nameArgs[0]);
+		hasArgs = true;
+	}
+	auto authorArgs = line.GetOption("author", 1);
+	if (authorArgs) {
+		_author.assign_convert(authorArgs[0]);
+		hasArgs = true;
+	}
+	auto descriptionArgs = line.GetOption("description", 1);
+	if (descriptionArgs) {
+		_description.assign_convert(descriptionArgs[0]);
 		hasArgs = true;
 	}
 
@@ -55,13 +67,19 @@ void EditMetadataCheat::OnShopperAccept(const ResourceKey& selection)
 	cAssetMetadataPtr metadata;
 	Pollinator::GetMetadata(selection.instanceID, selection.groupID, metadata);
 	if (metadata->IsLocalized()) {
+		PrikolMetadataTokenTranslator::SetCreationName(metadata->GetName());
 		HintManager.ShowHint(id("EditMetadataCheatFail"));
 		return;
 	}
+
 	if (_name.compare(u"") != 0)
 		metadata->mName = _name;
+	if (_author.compare(u"") != 0)
+		metadata->mAuthorName = _author;
+	if (_description.compare(u"") != 0)
+		metadata->mDescription = _description;
 
 	ResourceManager.WriteResource(metadata.get());
-	PrikolMetadataTokenTranslator::SetCreationName(metadata->mName);
+	PrikolMetadataTokenTranslator::SetCreationName(metadata->GetName());
 	HintManager.ShowHint(id("EditMetadataCheatSuccessful"));
 }

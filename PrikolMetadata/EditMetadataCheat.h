@@ -9,7 +9,7 @@ class EditMetadataCheat
 private:
 	Sporepedia::ShopperRequest _request;
 
-	string16 _name;
+	string16 _name, _author, _description;
 public:
 	EditMetadataCheat();
 	~EditMetadataCheat();
