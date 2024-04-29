@@ -3,8 +3,10 @@
 #include "PrikolMetadataTokenTranslator.h"
 
 EditMetadataCheat::EditMetadataCheat()
-	: _request(this)
+	: _request()
 {
+	_request.pMultiListener = this;
+	_request.maxSelections = 100;
 }
 
 
@@ -40,7 +42,7 @@ void EditMetadataCheat::ParseLine(const ArgScript::Line& line)
 	}
 
 	if (!hasArgs) {
-		App::ConsolePrintF("Error! No arguments. Enter help editMetadata to get more information.");
+		App::ConsolePrintF("Error! No arguments. Enter \"help editMetadata\" to get more information.");
 		return;
 	}
 
@@ -62,24 +64,31 @@ const char* EditMetadataCheat::GetDescription(ArgScript::DescriptionMode mode) c
 	}
 }
 
-void EditMetadataCheat::OnShopperAccept(const ResourceKey& selection)
+void EditMetadataCheat::OnShopperAccept(const eastl::vector<ResourceKey>& selection)
 {
-	cAssetMetadataPtr metadata;
-	Pollinator::GetMetadata(selection.instanceID, selection.groupID, metadata);
-	if (metadata->IsLocalized()) {
-		PrikolMetadataTokenTranslator::SetCreationName(metadata->GetName());
-		HintManager.ShowHint(id("EditMetadataCheatFail"));
-		return;
+	bool success = false;
+	for (auto& key : selection) {
+		cAssetMetadataPtr metadata;
+		Pollinator::GetMetadata(key.instanceID, key.groupID, metadata);
+		if (metadata->IsLocalized()) {
+			PrikolMetadataTokenTranslator::SetCreationName(metadata->GetName());
+			HintManager.ShowHint(id("EditMetadataCheatFail"));
+			continue;
+		}
+		success = true;
+
+		if (_name.compare(u"") != 0)
+			metadata->mName = _name;
+		if (_author.compare(u"") != 0)
+			metadata->mAuthorName = _author;
+		if (_description.compare(u"") != 0)
+			metadata->mDescription = _description;
+
+		ResourceManager.WriteResource(metadata.get());
 	}
 
-	if (_name.compare(u"") != 0)
-		metadata->mName = _name;
-	if (_author.compare(u"") != 0)
-		metadata->mAuthorName = _author;
-	if (_description.compare(u"") != 0)
-		metadata->mDescription = _description;
-
-	ResourceManager.WriteResource(metadata.get());
-	PrikolMetadataTokenTranslator::SetCreationName(metadata->GetName());
-	HintManager.ShowHint(id("EditMetadataCheatSuccessful"));
+	if (success) {
+		//PrikolMetadataTokenTranslator::SetCreationName(metadata->GetName());
+		HintManager.ShowHint(id("EditMetadataCheatSuccessful"));
+	}
 }

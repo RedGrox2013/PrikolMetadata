@@ -4,7 +4,7 @@
 
 class EditMetadataCheat 
 	: public ArgScript::ICommand
-	, public Sporepedia::IShopperListener
+	, public Sporepedia::IMultiShopperListener
 {
 private:
 	Sporepedia::ShopperRequest _request;
@@ -20,6 +20,6 @@ public:
 	// Returns a string containing the description. If mode != DescriptionMode::Basic, return a more elaborated description
 	const char* GetDescription(ArgScript::DescriptionMode mode) const override;
 
-	void OnShopperAccept(const ResourceKey& selection) override;
+	void OnShopperAccept(const eastl::vector<ResourceKey>& selection) override;
 };
 
